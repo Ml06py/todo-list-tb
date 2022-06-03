@@ -36,4 +36,16 @@ class DataBase():
         '''
         self.cur.execute("UPDATE users SET usertoken = NULL , auth = (?) where userid = (?)", ("f", user_id,))
         self.connect.commit()
-    
+
+
+    def info(self, user_id):
+        '''
+            Return users token
+        '''
+        user = self.cur.execute("SELECT userid, usertoken FROM users where userid = (?)", (user_id,))
+        result = [i for i in user]
+        if result != []:
+            return result[0][1]
+        else:
+            return False
+

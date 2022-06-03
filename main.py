@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from decouple import config
 from database import DataBase
 from request import Request
@@ -24,14 +24,11 @@ async def start(client, message):
         await message.reply(f""" Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}).
         Welcome back.
                             """,
-            reply_markup=InlineKeyboardMarkup(
+            reply_markup=ReplyKeyboardMarkup(
                 [
-                    [InlineKeyboardButton(
-                        "Logout", 
-                        callback_data = "logout-request"
-                    )
-                    ],
-                ]
+                    ["logout", "token"]  
+                ],
+                resize_keyboard=True
             )
         )
     else:
@@ -96,22 +93,22 @@ async def callback(c, q):
         db.token(user_id=message_id, token=request[1])
         await app.send_message(message_id, f"""You are now registered 
                                             your username: `{request[2]}`
-                                            Your token: |{request[1]}| (keep it safe)"""
+                                            Your token: ||{request[1]}|| (keep it safe)"""
                                             )
     else:
         await app.send_message(message_id, f"sth went wrong... \n please try again later")
 
 
 
-@app.on_callback_query(filters.regex("^logout-request$"))
-async def callback(c, q):
+@app.on_message(filters.regex("logout"))
+async def callback(c, m):
     '''
         Logout user from website and remove token from db
     '''
 
-    message_id = q.message.chat.id
+    message_id = m.chat.id
 
-    await q.edit_message_text("Send me your username")
+    await m.reply ("Send me your username")
     username = await app.listen(message_id, filters=filters.text, timeout=120)
     await app.send_message(message_id, "Now send me your Token")
     token = await app.listen(message_id, filters=filters.text, timeout=120)
@@ -122,6 +119,21 @@ async def callback(c, q):
         await msg.edit("you are now logged out")
     else:
         await msg.edit("Sth went wrong, token or username is invalid.")
+
+
+@app.on_message(filters.regex("^token$"))
+async def token(c, m):
+    '''
+        return users token
+    '''
+    message_id = m.chat.id
+    if (db.authenticate(user_id=message_id)):
+        if (token:= db.info(user_id=message_id)):
+            await m.reply(f"your token is: ||{token}||")
+        else:
+            "Token does not exist :|"
+    else:
+        await m.reply("You are not logged in!")
 
 
 app.run()
