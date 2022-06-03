@@ -68,7 +68,30 @@ async def callback(c, q):
         await a.edit("Sth went wrong, token or username is invalid.")
     
 
+@app.on_callback_query(filters.regex("^register-request$"))
+async def callback(c, q):
+    '''
+        Register user to website and add to db
+    '''
+    message_id = q.message.chat.id
+    await q.edit_message_text("Tell me your first name")
+    first_name = await app.listen(message_id, filters=filters.text, timeout=120)
 
+    await app.send_message(message_id, "Tell me your last name")
+    last_name = await app.listen(message_id, filters=filters.text, timeout=120)
 
+    await app.send_message(message_id, "tell me your password (must contain numbers and letters")
+    password = await app.listen(message_id, filters=filters.text, timeout=120)
+
+    request = re.Register(first_name.text, last_name.text,message_id , password.text)
+
+    if request:
+        db.token(user_id=message_id, token=request[2])
+        await app.send_message(message_id, f"""You are now registered 
+                                            your username: `{request[1]}`
+                                            Your token: |{request[2]}| (keep it safe)"""
+                                            )
+    else:
+        await app.send_message(message_id, f"sth went wrong... \n please try again later")
 
 app.run()

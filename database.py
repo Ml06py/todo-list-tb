@@ -24,4 +24,9 @@ class DataBase():
         elif result != [] and result[0][1] == "t":
             return True
 
+    def token(self, user_id, token):
+        '''
+            This func add user token to db
+        '''
+        self.cur.execute("UPDATE users SET usertoken = (?), auth = (?) where userid = (?)", (token, "t", user_id,))
     
