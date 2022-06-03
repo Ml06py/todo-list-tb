@@ -31,3 +31,14 @@ class Request():
             return True,  return_val["token"], return_val["username"]
         else:
             return False
+
+    def Logout(self,username, token ,userid):
+        '''
+            Logout a user from website
+        '''
+        request = requests.get(f"{self.url}/tb-logout/{username}/{token}/{userid}/").content.decode("UTF-8")
+
+        if "done" in json.loads(request):
+            return True
+        else:
+            return False

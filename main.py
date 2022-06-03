@@ -20,10 +20,20 @@ async def start(client, message):
         response to /start command
     '''
     #if user is authenticated
-    if (a := db.authenticate(user_id=message.from_user.id)):
+    if (db.authenticate(user_id=message.from_user.id)):
         await message.reply(f""" Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}).
         Welcome back.
-                            """)
+                            """,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [InlineKeyboardButton(
+                        "Logout", 
+                        callback_data = "logout-request"
+                    )
+                    ],
+                ]
+            )
+        )
     else:
         await message.reply(f""" Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}).
         Welcome to todo bot.
@@ -59,13 +69,12 @@ async def callback(c, q):
     await app.send_message(message_id, "Now send me your Token")
     token = await app.listen(message_id, filters=filters.text, timeout=120)
     # send request
-    request = re.Login(username.text, token.text, message_id)
-    a = await app.send_message(message_id, "Request sent")
-    if request:
+    msg = await app.send_message(message_id, "Request sent")
+    if re.Login(username.text, token.text, message_id):
         db.token(user_id=message_id, token=token.text)
-        await a.edit("you are now logged in")
+        await msg.edit("you are now logged in")
     else:
-        await a.edit("Sth went wrong, token or username is invalid.")
+        await msg.edit("Sth went wrong, token or username is invalid.")
     
 
 @app.on_callback_query(filters.regex("^register-request$"))
@@ -83,15 +92,36 @@ async def callback(c, q):
     await app.send_message(message_id, "tell me your password (must contain numbers and letters")
     password = await app.listen(message_id, filters=filters.text, timeout=120)
 
-    request = re.Register(first_name.text, last_name.text,message_id , password.text)
-
-    if request:
-        db.token(user_id=message_id, token=request[2])
+    if (request:= re.Register(first_name.text, last_name.text,message_id , password.text)):
+        db.token(user_id=message_id, token=request[1])
         await app.send_message(message_id, f"""You are now registered 
-                                            your username: `{request[1]}`
-                                            Your token: |{request[2]}| (keep it safe)"""
+                                            your username: `{request[2]}`
+                                            Your token: |{request[1]}| (keep it safe)"""
                                             )
     else:
         await app.send_message(message_id, f"sth went wrong... \n please try again later")
+
+
+
+@app.on_callback_query(filters.regex("^logout-request$"))
+async def callback(c, q):
+    '''
+        Logout user from website and remove token from db
+    '''
+
+    message_id = q.message.chat.id
+
+    await q.edit_message_text("Send me your username")
+    username = await app.listen(message_id, filters=filters.text, timeout=120)
+    await app.send_message(message_id, "Now send me your Token")
+    token = await app.listen(message_id, filters=filters.text, timeout=120)
+    # send request
+    msg = await app.send_message(message_id, "Request sent")
+    if re.Logout(username.text, token.text, message_id):
+        db.logout(user_id=message_id)
+        await msg.edit("you are now logged out")
+    else:
+        await msg.edit("Sth went wrong, token or username is invalid.")
+
 
 app.run()

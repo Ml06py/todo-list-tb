@@ -29,4 +29,11 @@ class DataBase():
             This func add user token to db
         '''
         self.cur.execute("UPDATE users SET usertoken = (?), auth = (?) where userid = (?)", (token, "t", user_id,))
+        self.connect.commit()
+    def logout(self, user_id):
+        '''
+            Log out a user (set status 'n' and remove his token)
+        '''
+        self.cur.execute("UPDATE users SET usertoken = NULL , auth = (?) where userid = (?)", ("f", user_id,))
+        self.connect.commit()
     
