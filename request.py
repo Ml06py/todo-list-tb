@@ -24,7 +24,8 @@ class Request():
         # json to send
         base_json = {"first_name": first_name,"last_name": last_name,"telegram_id": userid,"token": "","password": password}
         # request
-        request = requests.post(f"{self.url}/tb-register/", json=base_json, headers={'content-type': 'application/json'}).content.decode("UTF-8")
+        request = requests.post(f"{self.url}/tb-register/", json=base_json,
+                                 headers={'content-type': 'application/json'}).content.decode("UTF-8")
         return_val = json.loads(request)
 
         if "token" and "username" in return_val:
@@ -42,3 +43,19 @@ class Request():
             return True
         else:
             return False
+    
+    def Create(self, token, name, detail, time):
+        '''
+            Request in order to create task
+        '''
+        raw_data = {"name": name ,"detail": detail,"time_to_start": time}
+        request = requests.post(f"{self.url}/create/{token}/",
+                                json= raw_data, headers= {'content-type': 'application/json'}).content.decode("UTF-8")
+
+        response = json.loads(request)                      
+        if "token" in response:
+            return True, response["token"]
+        else:
+            return False
+
+        
