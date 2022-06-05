@@ -58,4 +58,16 @@ class Request():
         else:
             return False
 
+    def Update(self, task_token, user_token):
+        '''
+            send a Request in order to update a tasks status
+        '''
+        request = requests.get(f"{self.url}/update/{task_token}/{user_token}/").content.decode("utf-8") 
         
+        try:
+            response = json.loads(request)
+            if "done" in response:
+                return True
+        except:
+            return False
+

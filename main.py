@@ -26,7 +26,7 @@ async def start(client, message):
                             """,
             reply_markup=ReplyKeyboardMarkup(
                 [
-                    ["add task"],
+                    ["add task", "update task"],
                     ["logout", "token"]  
                 ],
                 resize_keyboard=True
@@ -49,7 +49,7 @@ async def start(client, message):
 
 
 @app.on_message(filters.regex("^login$"))
-async def callback(c, m):
+async def login(c, m):
     '''
         Login user to website and add to db
     '''
@@ -72,12 +72,12 @@ async def callback(c, m):
     
 
 @app.on_message(filters.regex("^register$"))
-async def callback(c, m):
+async def register(c, m):
     '''
         Register user to website and add to db
     '''
+    message_id = m.chat.id
     if not (db.authenticate(user_id=message_id)):
-        message_id = m.chat.id
         await app.send_message(message_id, "Tell me your first name")
         first_name = await app.listen(message_id, filters=filters.text, timeout=120)
 
@@ -162,5 +162,26 @@ async def token(c, m):
 
     else:
         await m.reply("You are not logged in!")
+
+
+@app.on_message(filters.regex("^update task$"))
+async def token(c, m):
+    '''
+        Update your tasks status
+    '''
+    message_id = m.chat.id
+    if (db.authenticate(user_id=message_id)):
+        await m.reply ("Send me your task's token")
+        task_token = await app.listen(message_id, filters=filters.text, timeout=10)
+        request= re.Update(task_token=task_token.text, user_token=db.info(user_id=message_id))
+        if request:
+            await m.reply(f"Your task's status have changed.")
+        else:
+            await m.reply(f"Sth went wrong, make sure token is correct and status if unfinished.")
+    else:
+        await m.reply("You are not logged in!")
+
+
+
 
 app.run()
