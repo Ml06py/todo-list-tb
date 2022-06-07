@@ -1,4 +1,5 @@
 import requests, json
+from io import BytesIO
 
 
 class Request():
@@ -71,3 +72,29 @@ class Request():
         except:
             return False
 
+    def List(self, token):
+        '''
+            Request in order to get all tasks of a user
+        '''
+        request = requests.get(f"{self.url}/list/{token}/").content.decode("utf-8") 
+        data = json.loads(request)
+        # get the data
+        if data == []:
+            return False
+        
+        #if user have tasks
+        else:
+            task = []
+
+            for response in data:
+                # get the tasks and add it to task list
+                s = json.loads(json.dumps(response))            
+                text = f"name: {s['name']}\ntoken: {s['token']}\nstatus: {s['done']}\n\n"
+                task.append(text)
+
+            # write  task list content in a file
+            (f := BytesIO(str('\n'.join(task)).encode())).name = 'tasks.txt'
+            
+            # clear task list
+            task.clear()
+            return f

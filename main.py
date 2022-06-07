@@ -26,6 +26,7 @@ async def start(client, message):
                             """,
             reply_markup=ReplyKeyboardMarkup(
                 [
+                    ["tasks"],
                     ["add task", "update task"],
                     ["logout", "token"]  
                 ],
@@ -56,10 +57,12 @@ async def login(c, m):
 
     message_id = m.chat.id
     if not (db.authenticate(user_id=message_id)):
+        # inputs
         await app.send_message(message_id, "Now send me your Username")
         username = await app.listen(message_id, filters=filters.text, timeout=120)
         await app.send_message(message_id, "Now send me your Token")
         token = await app.listen(message_id, filters=filters.text, timeout=120)
+
         # send request
         msg = await app.send_message(message_id, "Request sent")
         if re.Login(username.text, token.text, message_id):
@@ -78,6 +81,7 @@ async def register(c, m):
     '''
     message_id = m.chat.id
     if not (db.authenticate(user_id=message_id)):
+        # inputs 
         await app.send_message(message_id, "Tell me your first name")
         first_name = await app.listen(message_id, filters=filters.text, timeout=120)
 
@@ -86,7 +90,8 @@ async def register(c, m):
 
         await app.send_message(message_id, "tell me your password (must contain numbers and letters")
         password = await app.listen(message_id, filters=filters.text, timeout=120)
-
+        
+        # send register request
         if (request:= re.Register(first_name.text, last_name.text,message_id , password.text)):
             db.token(user_id=message_id, token=request[1])
             await app.send_message(message_id, f"""You are now registered 
@@ -109,11 +114,12 @@ async def logout(c, m):
     if (db.authenticate(user_id=message_id)):
         await m.reply ("Send me your username")
         username = await app.listen(message_id, filters=filters.text, timeout=120)
-        await app.send_message(message_id, "Now send me your Token")
-        token = await app.listen(message_id, filters=filters.text, timeout=120)
-        # send request
+        
         msg = await app.send_message(message_id, "Request sent")
-        if re.Logout(username.text, token.text, message_id):
+        # get users token
+        token = db.info(user_id=message_id)
+        # send request
+        if re.Logout(username.text, token, message_id):
             db.logout(user_id=message_id)
             await msg.edit("you are now logged out")
         else:
@@ -129,6 +135,7 @@ async def token(c, m):
     '''
     message_id = m.chat.id
     if (db.authenticate(user_id=message_id)):
+        # get users token from db
         if (token:= db.info(user_id=message_id)):
             await m.reply(f"your token is: ||{token}||")
         else:
@@ -138,23 +145,26 @@ async def token(c, m):
 
 
 @app.on_message(filters.regex("^add task$"))
-async def token(c, m):
+async def add_task(c, m):
     '''
         Add task to website db
     '''
     message_id = m.chat.id
     if (db.authenticate(user_id=message_id)):
+        # inputs
         await m.reply ("give me a title for your task")
         name = await app.listen(message_id, filters=filters.text, timeout=120)
         await m.reply ("Write about 2 lines about what you want to do")
         description = await app.listen(message_id, filters=filters.text, timeout=120)
         await m.reply ("When you wanna do it? \n format-> YYYY-MM-DD HH:MM ")
         time = await app.listen(message_id, filters=filters.text, timeout=120)
-        
+
+        # send request to create a task
         request= re.Create(token=db.info(user_id=message_id),
                     name= name.text,
                     detail= description.text,
                     time= time.text)
+        # if data was valid
         if (token:= request):
             await m.reply(f"Task saved! \nToken is ||{token[1]}||")
         else:
@@ -165,14 +175,14 @@ async def token(c, m):
 
 
 @app.on_message(filters.regex("^update task$"))
-async def token(c, m):
+async def update_task(c, m):
     '''
         Update your tasks status
     '''
     message_id = m.chat.id
     if (db.authenticate(user_id=message_id)):
         await m.reply ("Send me your task's token")
-        task_token = await app.listen(message_id, filters=filters.text, timeout=10)
+        task_token = await app.listen(message_id, filters=filters.text, timeout=120)
         request= re.Update(task_token=task_token.text, user_token=db.info(user_id=message_id))
         if request:
             await m.reply(f"Your task's status have changed.")
@@ -181,6 +191,55 @@ async def token(c, m):
     else:
         await m.reply("You are not logged in!")
 
+
+@app.on_message(filters.regex("^tasks$"))
+async def task_option(c, m):
+    '''
+        Show available actions for tasks
+    '''
+    message_id = m.chat.id
+    if (db.authenticate(user_id=message_id)):
+        await app.send_message(
+            message_id,
+            "Select one option below",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [ 
+                        InlineKeyboardButton( 
+                            "All tasks file",
+                            callback_data="task-file"
+                        ),
+                    ]
+                ]
+            )
+        )
+
+    else:
+        await m.reply("You are not logged in!")
+
+
+@app.on_callback_query(filters.regex("^task-file$"))
+async def task_file(c, q):
+    '''
+        Return all tasks as a file
+    '''
+    message_id = q.message.chat.id
+
+    if (db.authenticate(user_id=message_id)):
+        # users token
+        token = db.info(user_id=message_id)
+        # send request to get users task
+        request = re.List(token=token)
+
+        # if user doesnt have any task
+        if not request:
+             await q.edit_message_text("You dont have any task, you can add one.")
+
+        else:
+            await q.edit_message_text("Check the file below")
+            await app.send_document(message_id, request)
+    else:
+        await app.send_message(message_id, "You are not logged in!")
 
 
 
