@@ -89,6 +89,18 @@ class Request():
             return False
 
 
+    def Delete(self, user_token, task_token):
+        '''
+            Delete a task from your list
+        '''
+        # Send request
+        request = requests.get(f"{self.url}/delete/{task_token}/{user_token}/").content.decode("utf-8")
+
+        if "Task  deleted" in request:
+            return True
+        else:
+            return False
+
     def List(self, token):
         '''
             Request in order to get all tasks of a user
