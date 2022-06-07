@@ -26,7 +26,7 @@ async def start(client, message):
                             """,
             reply_markup=ReplyKeyboardMarkup(
                 [
-                    ["tasks"],
+                    ["tasks", "task detail"],
                     ["add task", "update task"],
                     ["logout", "token"]  
                 ],
@@ -172,6 +172,39 @@ async def add_task(c, m):
 
     else:
         await m.reply("You are not logged in!")
+
+
+
+@app.on_message(filters.regex("^task detail$"))
+async def update_task(c, m):
+    '''
+        Show more info about a tasl
+    '''
+    message_id = m.chat.id
+
+    if (db.authenticate(user_id=message_id)):
+        await m.reply("send me your tasks token")
+        task_token = await app.listen(message_id, filters=filters.text, timeout=120)
+
+        request = re.Detail(user_token= db.info(user_id=message_id), 
+                            task_token=task_token.text)
+        # if task exists
+        if request:
+            await m.reply(f"""
+                name: {request[0]}
+
+                detail: {request[1]}
+
+                time: {request[2]}
+
+                is done: {request[3]}
+            """)
+
+        else:
+            await m.reply("Sth went wrong, user token or tasks token is invalid.")
+    else:
+        await m.reply("You are not logged in!")
+
 
 
 @app.on_message(filters.regex("^update task$"))

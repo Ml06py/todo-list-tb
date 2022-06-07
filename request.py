@@ -72,6 +72,23 @@ class Request():
         except:
             return False
 
+
+
+    def Detail(self, user_token, task_token):
+        '''
+            Request in order to get more detail about a task
+        '''
+        # send request
+        request = requests.get(f"{self.url}/detail/{task_token}/{user_token}/").content.decode("utf-8")
+        response = json.loads(request)
+
+        if response != []:
+            return response[0]["name"], response[0]["detail"], response[0]["time_to_start"], response[0]["done"]
+
+        else:
+            return False
+
+
     def List(self, token):
         '''
             Request in order to get all tasks of a user
