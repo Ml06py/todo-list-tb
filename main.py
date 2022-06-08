@@ -27,6 +27,7 @@ async def start(client, message):
             reply_markup=ReplyKeyboardMarkup(
                 [
                     ["tasks"],
+                    ["task autoremove"],
                     ["task detail", "task delete"],
                     ["add task", "update task"],
                     ["logout", "token"]  
@@ -222,6 +223,23 @@ async def delete_task(c, m):
             await m.reply("Task deleted.")
         else:
             await m.reply("sth went wrong with ownership or tasks token.")
+    else:
+        await m.reply("You are not logged in!")
+
+
+@app.on_message(filters.regex("^task autoremove$"))
+async def autoremove_task(c, m):
+    '''
+        Remove all tasks that have been done
+    '''
+    message_id = m.chat.id
+
+    if (db.authenticate(user_id=message_id)):
+        if re.AutoRemove(owner_token=db.info(user_id=message_id)):
+            await m.reply ("Some tasks removed from your list.")
+        else:
+            await m.reply ("No changed detected.")
+
     else:
         await m.reply("You are not logged in!")
 

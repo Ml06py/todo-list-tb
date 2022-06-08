@@ -127,3 +127,15 @@ class Request():
             # clear task list
             task.clear()
             return f
+
+    def AutoRemove(self, owner_token):
+        '''
+            Remove  tasks that have been done 
+        '''
+        request = requests.get(f"{self.url}/auto-delete/{owner_token}/").content.decode("utf-8")
+        
+        if "some tasks removed" in request:
+            return True
+
+        else:
+            return False
