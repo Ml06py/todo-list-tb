@@ -20,12 +20,13 @@ $ cd todo-list-tb
 $ pip install -r requirement.txt
 ```
 ## Step 6:
-<h3>Create a .env file and add required information</h3>
+### Create a .env file and then add following information to your file.
 ```
 API_ID = Your api id
-API_HASH= "Your Api hash"
-TOKEN = "Your token"
+API_HASH= Your Api hash
+TOKEN = Your token
 ```
+
 ## Step 7:
 <h3>Add your server's url to requests file.</h3>
 
