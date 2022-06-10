@@ -4,6 +4,7 @@ from decouple import config
 from database import DataBase
 from request import Request
 from pyromod import listen
+
 # config your api id, api hash and your bot token here 
 app = Client(
     "git",
@@ -21,32 +22,30 @@ async def start(client, message):
     '''
     #if user is authenticated
     if (db.authenticate(user_id=message.from_user.id)):
-        await message.reply(f""" Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}).
-        Welcome back.
-                            """,
-            reply_markup=ReplyKeyboardMarkup(
-                [
-                    ["tasks"],
-                    ["task autoremove"],
-                    ["task detail", "task delete"],
-                    ["add task", "update task"],
-                    ["logout", "token"]  
-                ],
-                resize_keyboard=True
-            )
-        )
+        await message.reply(f"Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}). \n"
+                            "Welcome back.",
+                            reply_markup=ReplyKeyboardMarkup(
+                                [
+                                    ["tasks"],
+                                    ["task autoremove"],
+                                    ["task detail", "task delete"],
+                                    ["add task", "update task"],
+                                    ["logout", "token"]  
+                                ],
+                                resize_keyboard=True
+                            )
+                        )
     else:
-        await message.reply(f""" Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}).
-        Welcome to todo bot.
-        you are not authenticated, please register/login to our website .
-                            """,
-        reply_markup=ReplyKeyboardMarkup(
-                [
-                    ["login", "register"]  
-                ],
-                resize_keyboard=True
-            )
-        )
+        await message.reply(f" Hello [{message.from_user.first_name}](tg://user?id={message.from_user.id}). \n"
+                            "Welcome to todo bot. \n"
+                            "you are not authenticated, please register/login to our website .",
+                        reply_markup=ReplyKeyboardMarkup(
+                                [
+                                    ["login", "register"]  
+                                ],
+                                resize_keyboard=True
+                            )
+                        )
 
 
 
@@ -96,9 +95,9 @@ async def register(c, m):
         # send register request
         if (request:= re.Register(first_name.text, last_name.text,message_id , password.text)):
             db.token(user_id=message_id, token=request[1])
-            await app.send_message(message_id, f"""You are now registered 
-                                                your username: `{request[2]}`
-                                                Your token: ||{request[1]}|| (keep it safe)"""
+            await app.send_message(message_id, f"You are now registered \n" 
+                                                f"your username: `{request[2]}`"
+                                                f"Your token: ||{request[1]}|| (keep it safe)"
                                                 )
         else:
             await app.send_message(message_id, f"sth went wrong... \n please try again later")
@@ -192,15 +191,11 @@ async def update_task(c, m):
                             task_token=task_token.text)
         # if task exists
         if request:
-            await m.reply(f"""
-                name: {request[0]}
-
-                detail: {request[1]}
-
-                time: {request[2]}
-
-                is done: {request[3]}
-            """)
+            await m.reply(f"name: {request[0]} \n"
+                          f"detail: {request[1]}"
+                          f"time: {request[2]}"
+                          f"is done: {request[3]}"
+                          )
 
         else:
             await m.reply("Sth went wrong, user token or tasks token is invalid.")

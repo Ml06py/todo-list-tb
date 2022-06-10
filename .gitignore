@@ -1,3 +1,4 @@
 .env*
 git.session
 __pycache__/
+.idea
