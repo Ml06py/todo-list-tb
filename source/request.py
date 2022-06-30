@@ -50,7 +50,7 @@ class Request():
             Request in order to create task
         '''
         raw_data = {"name": name ,"detail": detail,"time_to_start": time}
-        request = requests.post(f"{self.url}/create/{token}/",
+        request = requests.post(f"{self.url}/create-task/{token}/",
                                 json= raw_data, headers= {'content-type': 'application/json'}).content.decode("UTF-8")
 
         response = json.loads(request)                      
@@ -63,7 +63,7 @@ class Request():
         '''
             send a Request in order to update a tasks status
         '''
-        request = requests.get(f"{self.url}/update/{task_token}/{user_token}/").content.decode("utf-8") 
+        request = requests.get(f"{self.url}/update-task/{task_token}/{user_token}/").content.decode("utf-8") 
         
         try:
             response = json.loads(request)
@@ -79,7 +79,7 @@ class Request():
             Request in order to get more detail about a task
         '''
         # send request
-        request = requests.get(f"{self.url}/detail/{task_token}/{user_token}/").content.decode("utf-8")
+        request = requests.get(f"{self.url}/detail-task/{task_token}/{user_token}/").content.decode("utf-8")
         response = json.loads(request)
 
         if response != []:
@@ -94,7 +94,7 @@ class Request():
             Delete a task from your list
         '''
         # Send request
-        request = requests.get(f"{self.url}/delete/{task_token}/{user_token}/").content.decode("utf-8")
+        request = requests.get(f"{self.url}/delete-task/{task_token}/{user_token}/").content.decode("utf-8")
 
         if "Task  deleted" in request:
             return True
@@ -105,7 +105,7 @@ class Request():
         '''
             Request in order to get all tasks of a user
         '''
-        request = requests.get(f"{self.url}/list/{token}/").content.decode("utf-8") 
+        request = requests.get(f"{self.url}/list-task/{token}/").content.decode("utf-8") 
         data = json.loads(request)
         # get the data
         if data == []:
@@ -132,7 +132,7 @@ class Request():
         '''
             Remove  tasks that have been done 
         '''
-        request = requests.get(f"{self.url}/auto-delete/{owner_token}/").content.decode("utf-8")
+        request = requests.get(f"{self.url}/auto-delete-task/{owner_token}/").content.decode("utf-8")
         
         if "some tasks removed" in request:
             return True
