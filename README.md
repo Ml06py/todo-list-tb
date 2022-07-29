@@ -34,3 +34,10 @@ TOKEN = Your token
 ```
 $ python main.py
 ```
+
+TODO:
+
+<input type="checkbox" i name="Add project requests"
+             >
+<input type="checkbox"  name="Add routine requests"
+             >
